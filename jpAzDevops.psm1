@@ -36,7 +36,7 @@ function Connect-JpAzDevOps {
 		[Parameter(Mandatory=$True,
             HelpMessage="Azure DevOps Hostname.   Ex:  dev.azure.com")]
 		[string]$Hostname,
-		[Parameter(Mandatory=$True,
+		[Parameter(Mandatory=$False,
 			HelpMessage="Azure DevOps Organization.")]
 		[string]$Organization,
 		[Parameter(Mandatory=$True,
@@ -53,7 +53,11 @@ function Connect-JpAzDevOps {
 	}
 	
 	process {
-		$baseProjectUrl = "https://" + "${Hostname}" + "/" + "${Organization}" + "/" + "${Project}" + "/_apis/"
+		if ( $Organization ) {
+			$baseProjectUrl = "https://" + "${Hostname}" + "/" + "${Organization}" + "/" + "${Project}" + "/_apis/"
+		} else {
+			$baseProjectUrl = "https://" + "${Hostname}" + "/" + "${Project}" + "/_apis/"
+		}
 		Write-Debug "Connecting to Azure Devops at $baseProjectUrl"
 		if ($Global:DefaultDevOpsProject) {
 			$current_url_name = ($Global:DefaultDevOpsProject.name)
