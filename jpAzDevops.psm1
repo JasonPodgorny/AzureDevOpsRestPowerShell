@@ -382,14 +382,22 @@ function Get-JpAzDevopsPullRequests {
 		[Parameter(ValueFromPipelineByPropertyName=$True,
 			Mandatory=$True,
             HelpMessage="DevOps Repo Id")]
-		[string]$id
+		[string]$id,
+		[Parameter(ValueFromPipelineByPropertyName=$False,
+			Mandatory=$False,
+            HelpMessage="Request Status (Defaults To Active)")]
+		[string]$status
 	)
 	
 	begin {} 
 	
 	process { 
 		Write-Debug "Getting Devops Pull Requests"
-		$url = "$($Global:DefaultDevOpsProject.ServerURI)git/repositories/${id}/pullrequests?api-version=6.1-preview.1"
+		$searchCriteria = ""
+		if ( $status ) {
+			$searchCriteria += "searchCriteria.status=${status}&"
+		}
+		$url = "$($Global:DefaultDevOpsProject.ServerURI)git/repositories/${id}/pullrequests?${searchCriteria}api-version=6.1-preview.1"
 		$pullRequestList = Calling-Get -url $url
 		foreach ($pullRequest in $pullRequestList.value) {
 			$obj = New-Object -type PSObject -Property @{
