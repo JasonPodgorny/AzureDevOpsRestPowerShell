@@ -406,6 +406,7 @@ function Get-JpAzDevopsPullRequests {
 			$obj | Add-Member -NotePropertyName "id" -NotePropertyValue $pullRequest.pullRequestId
 			$obj | Add-Member -NotePropertyName "title" -NotePropertyValue $pullRequest.title
 			$obj | Add-Member -NotePropertyName "description" -NotePropertyValue $pullRequest.description
+			$obj | Add-Member -NotePropertyName "creator" -NotePropertyValue $pullRequest.createdBy.displayName
 			$obj | Add-Member -NotePropertyName "status" -NotePropertyValue $pullRequest.status
 			$obj | Add-Member -NotePropertyName "creationDate" -NotePropertyValue $pullRequest.creationDate
 			$obj | Add-Member -NotePropertyName "merge_status" -NotePropertyValue $pullRequest.mergeStatus
