@@ -400,16 +400,27 @@ function Get-JpAzDevopsPullRequests {
 		$url = "$($Global:DefaultDevOpsProject.ServerURI)git/repositories/${id}/pullrequests?${searchCriteria}api-version=6.1-preview.1"
 		$pullRequestList = Calling-Get -url $url
 		foreach ($pullRequest in $pullRequestList.value) {
-			$obj = New-Object -type PSObject -Property @{
-				"title" = $pullRequest.title
-				"description" = $pullRequest.description
-				"id" = $pullRequest.pullRequestId
-				"status" = $pullRequest.status
-				"source_branch" = $pullRequest.sourceRefName
-				"targe_branch" = $pullRequest.targetRefName
-				"merge_status" = $pullRequest.mergeStatus
-				"creationDate" = $pullRequest.creationDate
-			}
+
+			
+			$obj = new-object -typename psobject
+			$obj | Add-Member -NotePropertyName "id" -NotePropertyValue $pullRequest.pullRequestId
+			$obj | Add-Member -NotePropertyName "title" -NotePropertyValue $pullRequest.title
+			$obj | Add-Member -NotePropertyName "description" -NotePropertyValue $pullRequest.description
+			$obj | Add-Member -NotePropertyName "status" -NotePropertyValue $pullRequest.status
+			$obj | Add-Member -NotePropertyName "creationDate" -NotePropertyValue $pullRequest.creationDate
+			$obj | Add-Member -NotePropertyName "merge_status" -NotePropertyValue $pullRequest.mergeStatus
+			$obj | Add-Member -NotePropertyName "source_branch" -NotePropertyValue $pullRequest.sourceRefName
+			$obj | Add-Member -NotePropertyName "targe_branch" -NotePropertyValue $pullRequest.targetRefName
+
+			# Include Code Review Details
+			$codeReviewArtifactId = "vstfs:///CodeReview/CodeReviewId/$(${pullrequest}.repository.project.id)/$(${pullrequest}.codeReviewId)"
+			$codeReviewUrl = "$($Global:DefaultDevOpsProject.ServerURI)policy/evaluations?artifactId=${codeReviewArtifactId}&api-version=6.0-preview.1"
+			$codeReviewLatest = $(Calling-Get -url $codeReviewUrl).value[0]
+
+			$obj | Add-Member -NotePropertyName "codeReviewId" -NotePropertyValue $pullRequest.codeReviewId
+			$obj | Add-Member -NotePropertyName "codeReviewStatus" -NotePropertyValue $codeReviewLatest.status
+			$obj | Add-Member -NotePropertyName "codeReviewErrors" -NotePropertyValue $codeReviewLatest.context.buildOutputPreview.errors
+
 			write-output $obj
 		}
 	}
