@@ -338,6 +338,7 @@ function Get-JpAzDevopsPipelineRuns {
 	[CmdletBinding()]
 	param(
 		[Parameter(ValueFromPipelineByPropertyName=$True,
+			Mandatory=$True,
             HelpMessage="DevOps Pipeline Id")]
 		[string]$id
 	)
@@ -363,8 +364,53 @@ function Get-JpAzDevopsPipelineRuns {
 	
 }
 
+function Get-JpAzDevopsPullRequests {
+	<#
+		.SYNOPSIS
+			Gets List Of Pull Requests For Repo From Azure Devops Project
+		.DESCRIPTION
+			Gets List Of Pull Requests For Repo From Azure Devops Project
+		.PARAMETER  Id
+			Azure Devops Repo Id to list pull requests for. 
+		.EXAMPLE
+			PS C:\> Get-JpAzDevopsPullRequests
+		.EXAMPLE
+			PS C:\> Get-JpAzDevopsPullRequests -id 1
+	#>
+	[CmdletBinding()]
+	param(
+		[Parameter(ValueFromPipelineByPropertyName=$True,
+			Mandatory=$True,
+            HelpMessage="DevOps Repo Id")]
+		[string]$id
+	)
+	
+	begin {} 
+	
+	process { 
+		Write-Debug "Getting Devops Pull Requests"
+		$url = "$($Global:DefaultDevOpsProject.ServerURI)git/repositories/${id}/pullrequests?api-version=6.1-preview.1"
+		$pullRequestList = Calling-Get -url $url
+		foreach ($pullRequest in $pullRequestList.value) {
+			$obj = New-Object -type PSObject -Property @{
+				"title" = $pullRequest.title
+				"description" = $pullRequest.description
+				"id" = $pullRequest.pullRequestId
+				"status" = $pullRequest.status
+				"source_branch" = $pullRequest.sourceRefName
+				"targe_branch" = $pullRequest.targetRefName
+				"merge_status" = $pullRequest.mergeStatus
+				"creationDate" = $pullRequest.creationDate
+			}
+			write-output $obj
+		}
+	}
+	
+}
+
 export-modulemember -Function Connect-JpAzDevOps
 export-modulemember -Function Disconnect-JpAzDevOps
 export-modulemember -Function Get-JpAzDevopsRepos
 export-modulemember -Function Get-JpAzDevopsPipelines
 export-modulemember -Function Get-JpAzDevopsPipelineRuns
+export-modulemember -Function Get-JpAzDevopsPullRequests
